@@ -15,7 +15,7 @@ class CastGraph:
     def __init__(self, samples: pd.DataFrame, samples_features: pd.DataFrame):
         self.samples = samples
         sorted_names = np.sort(self.samples[self.df_col].unique())
-        samples_features.index = sorted_names
+        samples_features = samples_features.sort_index()
         self.names = {name: i for i, name in enumerate(sorted_names)}
         self.rnames = {v: k for k, v in self.names.items()}
         self.empirical_single_marginals = Counter()
