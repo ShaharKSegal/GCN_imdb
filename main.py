@@ -15,10 +15,14 @@ import model
 import trainer
 
 parser = argparse.ArgumentParser(description='Train IMDB Model')
+parser.add_argument('--model', default=config.MovieNet, choices=config.models, help='the model to train')
+parser.add_argument('--fc_hidden_dim', default=64, type=int, help='fully connected hidden layer dimension')
+parser.add_argument('--gcn_hidden_dim', default=64, type=int, help='gcnhidden layer dimension')
+parser.add_argument('--gcn_out_dim', default=20, type=int, help='gcn output dimension')
 
 parser.add_argument('--ignore_cuda', action='store_true', help='should ignore cuda on device')
 parser.add_argument('--lr', default=0.01, type=float, help='learning rate')
-parser.add_argument('--max_epochs', default=30, type=int, help='the maximum number of epochs')
+parser.add_argument('--max_epochs', default=10, type=int, help='the maximum number of epochs')
 
 parser.add_argument('--runname', default='train', help='the exp name')
 parser.add_argument('--save_dir', default='./saved_runs/', help='the path to the root run dir')
@@ -59,8 +63,10 @@ dataset: ds.IMDBDataset = train_loader.dataset
 
 config.log.info('==> Building model...')
 
-
-net = model.MovieNet(128, 20, 2, 256)
+if config.args.model == config.MovieNet:
+    net = model.MovieNet(config.args.gcn_hidden_dim, config.args.gcn_out_dim, 2, config.args.fc_hidden_dim)
+elif config.args.model == config.SimpleDNN:
+    net = model.SimpleNN(config.args.fc_hidden_dim)
 start_epoch = 1
 net = net.to(config.args.torch_device)
 # support cuda

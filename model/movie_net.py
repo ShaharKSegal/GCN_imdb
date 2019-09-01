@@ -6,6 +6,7 @@ import dgl
 import config
 
 from .gcn import GCN
+from .simple import simple_dnn
 from ds import n_cast_per_movie, IMDBDataset
 
 
@@ -21,9 +22,7 @@ class MovieNet(nn.Module):
             n_movie_feats = len(IMDBDataset.feature_columns)
         if n_fc_cast_num is None:
             n_fc_cast_num = n_cast_per_movie
-        self.fc1 = nn.Linear(n_gcn_out * n_fc_cast_num + n_movie_feats, n_fc_hidden)
-        self.fc2 = nn.Linear(n_fc_hidden, n_fc_hidden)
-        self.fc3 = nn.Linear(n_fc_hidden, 2)
+        self.fc = simple_dnn(n_gcn_out, n_fc_hidden, n_movie_feats, n_fc_cast_num)
 
     def forward(self, graph_features, movie_features, cast_indices):
         # gcn embedding
@@ -33,7 +32,5 @@ class MovieNet(nn.Module):
         cast_features = embed_mat[cast_indices.flatten()].view(cast_indices.shape[0], -1)
         # concat with movie features
         fc_features = torch.cat((cast_features, movie_features), 1)
-        x = F.relu(self.fc1(fc_features))
-        x = F.relu(self.fc2(x))
-        x = self.fc3(x)
-        return x
+        out = self.fc(fc_features)
+        return out
